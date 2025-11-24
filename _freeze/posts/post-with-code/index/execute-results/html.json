@@ -1,0 +1,12 @@
+{
+  "hash": "9e7d15599470e8a7b735ce7afbabae96",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Cotação em Dolar\"\nauthor: \"Alexandre\"\ndate: \"2025-11-23\"\ncategories: [news, code, analysis]\nimage: \"image.jpg\"\njupyter: python3\n---\n\nNeste post irei mostrar o gráfico que irá mostrar a cotação do dolar. Mostrar no Mês 5 do Ano de 2022.\n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

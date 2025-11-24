@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>myblog</title>
+<link>https://your-website-url.example.com/</link>
+<atom:link href="https://your-website-url.example.com/index.xml" rel="self" type="application/rss+xml"/>
+<description>A blog built with Quarto</description>
+<generator>quarto-1.8.26</generator>
+<lastBuildDate>Sun, 23 Nov 2025 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Cotação em Dolar</title>
+  <dc:creator>Alexandre </dc:creator>
+  <link>https://your-website-url.example.com/posts/Atividade1/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>Neste post irei mostrar o gráfico que irá mostrar a cotação do dolar. O Gráfico irá mostrar no Mês 5 do Ano de 2022.</p>
+<div id="9306b28d" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> requests</span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb1-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> plotly.express <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> px</span>
+<span id="cb1-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> calendar</span>
+<span id="cb1-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> datetime <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> datetime, timedelta</span>
+<span id="cb1-6"></span>
+<span id="cb1-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Função pedida na atividade</span></span>
+<span id="cb1-8"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> cotacao_mes_ano(mmYYYY):</span>
+<span id="cb1-9">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 1 — Converter a string</span></span>
+<span id="cb1-10">    first_date <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> datetime.strptime(mmYYYY, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"%m%Y"</span>)</span>
+<span id="cb1-11">    last_day <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> calendar.monthrange(first_date.year, first_date.month)[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]</span>
+<span id="cb1-12">    last_date <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> first_date.replace(day<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>last_day)</span>
+<span id="cb1-13"></span>
+<span id="cb1-14">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 2 — Criar strings no formato exigido pela API</span></span>
+<span id="cb1-15">    data_inicial <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> first_date.strftime(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"%m-</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-%Y"</span>)</span>
+<span id="cb1-16">    data_final   <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> last_date.strftime(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"%m-</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-%Y"</span>)</span>
+<span id="cb1-17"></span>
+<span id="cb1-18">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 3 — Montar URL da API PTAX</span></span>
+<span id="cb1-19">    url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (</span>
+<span id="cb1-20">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/"</span></span>
+<span id="cb1-21">        <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"CotacaoDolarPeriodo(dataInicial='</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>data_inicial<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">',dataFinalCotacao='</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>data_final<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">')"</span></span>
+<span id="cb1-22">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"?$format=json"</span></span>
+<span id="cb1-23">    )</span>
+<span id="cb1-24"></span>
+<span id="cb1-25">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 4 — Requisição</span></span>
+<span id="cb1-26">    r <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> requests.get(url).json()</span>
+<span id="cb1-27">    df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame(r[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"value"</span>])</span>
+<span id="cb1-28"></span>
+<span id="cb1-29">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 5 — Converter datas</span></span>
+<span id="cb1-30">    df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataHoraCotacao"</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.to_datetime(df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataHoraCotacao"</span>])</span>
+<span id="cb1-31"></span>
+<span id="cb1-32">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 6 — Ordenar</span></span>
+<span id="cb1-33">    df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.sort_values(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataHoraCotacao"</span>)</span>
+<span id="cb1-34"></span>
+<span id="cb1-35">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> df</span>
+<span id="cb1-36"></span>
+<span id="cb1-37"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ------------------------------------</span></span>
+<span id="cb1-38"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># CHAMAR A FUNÇÃO PARA MAIO DE 2022</span></span>
+<span id="cb1-39"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ------------------------------------</span></span>
+<span id="cb1-40"></span>
+<span id="cb1-41">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cotacao_mes_ano(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"052022"</span>)</span>
+<span id="cb1-42"></span>
+<span id="cb1-43">fig <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> px.line(</span>
+<span id="cb1-44">    df,</span>
+<span id="cb1-45">    x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dataHoraCotacao"</span>,</span>
+<span id="cb1-46">    y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cotacaoVenda"</span>,</span>
+<span id="cb1-47">    title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Cotação do Dólar – Maio/2022"</span>,</span>
+<span id="cb1-48">)</span>
+<span id="cb1-49"></span>
+<span id="cb1-50">fig.show()</span></code></pre></div></div>
+<div class="cell-output cell-output-display">
+<div>            <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script type="text/javascript">if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script>                <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.2.0.min.js" integrity="sha256-iZ2u/oU2wf/vDbl/ChcX93WgbBRSBvUO6N413hDz7xM=" crossorigin="anonymous"></script>                <div id="3bdcae13-71a1-43ba-8b9f-5cd133571305" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("3bdcae13-71a1-43ba-8b9f-5cd133571305")) {                    Plotly.newPlot(                        "3bdcae13-71a1-43ba-8b9f-5cd133571305",                        [{"hovertemplate":"dataHoraCotacao=%{x}\u003cbr\u003ecotacaoVenda=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","line":{"color":"#636efa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"","orientation":"v","showlegend":false,"x":["2022-05-02T15:57:38.053000000","2022-05-03T16:10:11.909000000","2022-05-04T15:35:11.769000000","2022-05-05T17:33:19.051000000","2022-05-06T17:46:43.972000000","2022-05-09T15:14:40.558000000","2022-05-10T17:00:24.737000000","2022-05-11T15:32:26.156000000","2022-05-12T13:27:48.769000000","2022-05-13T17:28:27.668000000","2022-05-16T17:40:33.187000000","2022-05-17T17:51:39.571000000","2022-05-18T17:40:40.788000000","2022-05-19T17:40:35.775000000","2022-05-20T17:26:43.960000000","2022-05-23T17:44:34.491000000","2022-05-24T17:30:50.699000000","2022-05-25T17:45:25.412000000","2022-05-26T17:45:52.222000000","2022-05-27T17:51:07.600000000","2022-05-30T17:45:07.391000000","2022-05-31T15:23:56.479000000"],"xaxis":"x","y":{"dtype":"f8","bdata":"XkvIBz0bFEBwXwfOGREUQERpb\u002fCFCRRAodY07zgFFEDNzMzMzEwUQPCnxks3iRRAdZMYBFaOFEBWfa62Yn8UQJ0Rpb3BlxRArkfhehRuFECHp1fKMkQUQDtwzojS3hNA9UpZhjjWE0B2cRsN4K0TQPvL7snDghNAOGdEaW8wE0DnjCjtDT4TQNXnaiv2VxNAj+TyH9IvE0C3Yn\u002fZPfkSQKUsQxzr4hJAtTf4wmTqEkA="},"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"dataHoraCotacao"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"cotacaoVenda"}},"legend":{"tracegroupgap":0},"title":{"text":"Cota\u00e7\u00e3o do D\u00f3lar \u2013 Maio\u002f2022"}},                        {"responsive": true}                    ).then(function(){
+                            
+var gd = document.getElementById('3bdcae13-71a1-43ba-8b9f-5cd133571305');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };            </script>        </div>
+</div>
+</div>
+
+
+
+ ]]></description>
+  <category>python</category>
+  <category>code</category>
+  <category>analysis</category>
+  <guid>https://your-website-url.example.com/posts/Atividade1/</guid>
+  <pubDate>Sun, 23 Nov 2025 00:00:00 GMT</pubDate>
+  <media:content url="https://your-website-url.example.com/posts/Atividade1/Presidential_dollar_coin_reverse.png" medium="image" type="image/png" height="145" width="144"/>
+</item>
+<item>
+  <title></title>
+  <link>https://your-website-url.example.com/posts/Atividade2/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>import requests import folium import pandas as pd</p>
+<section id="configurações-iniciais" class="level1">
+<h1>— 1. CONFIGURAÇÕES INICIAIS —</h1>
+</section>
+<section id="seu-novo-token" class="level1">
+<h1>Seu Novo Token</h1>
+<p>TOKEN = “073adc6302f541c8826992a5659c60b78c8207e350e966956c8efd660500c512”</p>
+</section>
+<section id="nova-linha-175t-10-metrô-santana---metrô-jabaquara" class="level1">
+<h1>Nova Linha: 175T-10 (Metrô Santana - Metrô Jabaquara)</h1>
+</section>
+<section id="uma-das-linhas-mais-longas-e-importantes-norte-sul" class="level1">
+<h1>Uma das linhas mais longas e importantes (Norte-Sul)</h1>
+<p>LINHA_ALVO = “175T-10”</p>
+</section>
+<section id="sessão-para-manter-a-autenticação-ativa-cookie" class="level1">
+<h1>Sessão para manter a autenticação ativa (Cookie)</h1>
+<p>session = requests.Session()</p>
+<p>def gerar_mapa_onibus(): # — 2. AUTENTICAÇÃO — url_auth = f”http://api.olhovivo.sptrans.com.br/v2.1/Login/Autenticar?token={TOKEN}” resp = session.post(url_auth)</p>
+<pre><code>if resp.text != "true":
+    print("Erro: Falha na autenticação. Token pode estar incorreto.")
+    return None
+
+# --- 3. DESCOBRIR O CÓDIGO INTERNO DA LINHA ---
+# A API não entende "175T-10", ela precisa de um código numérico (CL)
+url_busca = f"http://api.olhovivo.sptrans.com.br/v2.1/Linha/Buscar?termosBusca={LINHA_ALVO}"
+linhas = session.get(url_busca).json()
+
+if not linhas:
+    print(f"Linha {LINHA_ALVO} não encontrada.")
+    return None
+    
+# Pega a primeira opção (Sentido Principal: Santana -&gt; Jabaquara ou vice-versa)
+dados_linha = linhas[0]
+codigo_linha = dados_linha['cl']
+nome_linha = f"{dados_linha['lt']}-{dados_linha['tl']} ({dados_linha['tp']}-{dados_linha['ts']})"
+
+print(f"Monitorando: {nome_linha}")
+
+# --- 4. BUSCAR DADOS (Ônibus e Paradas) ---
+# A) Posição dos Ônibus agora
+url_posicao = f"http://api.olhovivo.sptrans.com.br/v2.1/Posicao/Linha?codigoLinha={codigo_linha}"
+dados_posicao = session.get(url_posicao).json()
+lista_onibus = dados_posicao['vs'] if 'vs' in dados_posicao else []
+
+# B) Lista de Paradas (Pontos)
+url_paradas = f"http://api.olhovivo.sptrans.com.br/v2.1/Parada/BuscarParadasPorLinha?codigoLinha={codigo_linha}"
+lista_paradas = session.get(url_paradas).json()
+
+# --- 5. CONSTRUÇÃO DO MAPA ---
+# Centraliza o mapa no primeiro ônibus encontrado. Se não tiver ônibus, usa a primeira parada.
+if lista_onibus:
+    centro_mapa = [lista_onibus[0]['py'], lista_onibus[0]['px']]
+elif lista_paradas:
+    centro_mapa = [lista_paradas[0]['py'], lista_paradas[0]['px']]
+else:
+    print("Sem dados de GPS disponíveis no momento.")
+    return None
+
+# Cria o mapa base
+mapa = folium.Map(location=centro_mapa, zoom_start=12)
+
+# Adiciona os Pinos das PARADAS (Azuis)
+# Isso desenha o "caminho" que a linha faz
+for parada in lista_paradas:
+    folium.Marker(
+        [parada['py'], parada['px']],
+        popup=f"🚏 {parada['np']}",
+        icon=folium.Icon(color='blue', icon='info-sign')
+    ).add_to(mapa)
+
+# Adiciona os Pinos dos ÔNIBUS (Vermelhos)
+for bus in lista_onibus:
+    folium.Marker(
+        [bus['py'], bus['px']],
+        tooltip=f"🚌 Prefixo: {bus['p']}",
+        icon=folium.Icon(color='red', icon='bus', prefix='fa')
+    ).add_to(mapa)
+    
+print(f"Sucesso! {len(lista_onibus)} ônibus e {len(lista_paradas)} paradas plotados.")
+return mapa</code></pre>
+</section>
+<section id="exibição" class="level1">
+<h1>— 6. EXIBIÇÃO —</h1>
+</section>
+<section id="chama-a-função-e-exibe-o-mapa-logo-abaixo" class="level1">
+<h1>Chama a função e exibe o mapa logo abaixo</h1>
+<p>mapa_final = gerar_mapa_onibus() mapa_final</p>
+
+
+</section>
+
+ ]]></description>
+  <guid>https://your-website-url.example.com/posts/Atividade2/</guid>
+  <pubDate>Mon, 24 Nov 2025 02:53:50 GMT</pubDate>
+</item>
+</channel>
+</rss>

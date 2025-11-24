@@ -1,0 +1,87 @@
+import requests
+import folium
+import pandas as pd
+
+# --- 1. CONFIGURAÇÕES INICIAIS ---
+# Seu Novo Token
+TOKEN = "073adc6302f541c8826992a5659c60b78c8207e350e966956c8efd660500c512"
+
+# Nova Linha: 175T-10 (Metrô Santana - Metrô Jabaquara)
+# Uma das linhas mais longas e importantes (Norte-Sul)
+LINHA_ALVO = "175T-10"
+
+# Sessão para manter a autenticação ativa (Cookie)
+session = requests.Session()
+
+def gerar_mapa_onibus():
+    # --- 2. AUTENTICAÇÃO ---
+    url_auth = f"http://api.olhovivo.sptrans.com.br/v2.1/Login/Autenticar?token={TOKEN}"
+    resp = session.post(url_auth)
+    
+    if resp.text != "true":
+        print("Erro: Falha na autenticação. Token pode estar incorreto.")
+        return None
+
+    # --- 3. DESCOBRIR O CÓDIGO INTERNO DA LINHA ---
+    # A API não entende "175T-10", ela precisa de um código numérico (CL)
+    url_busca = f"http://api.olhovivo.sptrans.com.br/v2.1/Linha/Buscar?termosBusca={LINHA_ALVO}"
+    linhas = session.get(url_busca).json()
+    
+    if not linhas:
+        print(f"Linha {LINHA_ALVO} não encontrada.")
+        return None
+        
+    # Pega a primeira opção (Sentido Principal: Santana -> Jabaquara ou vice-versa)
+    dados_linha = linhas[0]
+    codigo_linha = dados_linha['cl']
+    nome_linha = f"{dados_linha['lt']}-{dados_linha['tl']} ({dados_linha['tp']}-{dados_linha['ts']})"
+    
+    print(f"Monitorando: {nome_linha}")
+
+    # --- 4. BUSCAR DADOS (Ônibus e Paradas) ---
+    # A) Posição dos Ônibus agora
+    url_posicao = f"http://api.olhovivo.sptrans.com.br/v2.1/Posicao/Linha?codigoLinha={codigo_linha}"
+    dados_posicao = session.get(url_posicao).json()
+    lista_onibus = dados_posicao['vs'] if 'vs' in dados_posicao else []
+    
+    # B) Lista de Paradas (Pontos)
+    url_paradas = f"http://api.olhovivo.sptrans.com.br/v2.1/Parada/BuscarParadasPorLinha?codigoLinha={codigo_linha}"
+    lista_paradas = session.get(url_paradas).json()
+
+    # --- 5. CONSTRUÇÃO DO MAPA ---
+    # Centraliza o mapa no primeiro ônibus encontrado. Se não tiver ônibus, usa a primeira parada.
+    if lista_onibus:
+        centro_mapa = [lista_onibus[0]['py'], lista_onibus[0]['px']]
+    elif lista_paradas:
+        centro_mapa = [lista_paradas[0]['py'], lista_paradas[0]['px']]
+    else:
+        print("Sem dados de GPS disponíveis no momento.")
+        return None
+
+    # Cria o mapa base
+    mapa = folium.Map(location=centro_mapa, zoom_start=12)
+
+    # Adiciona os Pinos das PARADAS (Azuis)
+    # Isso desenha o "caminho" que a linha faz
+    for parada in lista_paradas:
+        folium.Marker(
+            [parada['py'], parada['px']],
+            popup=f"🚏 {parada['np']}",
+            icon=folium.Icon(color='blue', icon='info-sign')
+        ).add_to(mapa)
+
+    # Adiciona os Pinos dos ÔNIBUS (Vermelhos)
+    for bus in lista_onibus:
+        folium.Marker(
+            [bus['py'], bus['px']],
+            tooltip=f"🚌 Prefixo: {bus['p']}",
+            icon=folium.Icon(color='red', icon='bus', prefix='fa')
+        ).add_to(mapa)
+        
+    print(f"Sucesso! {len(lista_onibus)} ônibus e {len(lista_paradas)} paradas plotados.")
+    return mapa
+
+# --- 6. EXIBIÇÃO ---
+# Chama a função e exibe o mapa logo abaixo
+mapa_final = gerar_mapa_onibus()
+mapa_final

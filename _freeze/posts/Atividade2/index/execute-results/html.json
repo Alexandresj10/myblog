@@ -1,0 +1,12 @@
+{
+  "hash": "51a96b5eae5b26a3f364b2bab9eb6f76",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Atividade 2 – Monitoramento de Ônibus\"\nauthor: \"Alexandre\"\ndate: \"2025-11-20\"\ncategories: [api, onibus]\njupyter: python3\n---\n\nMostra a linha 741 em tempo real.\n\n::: {#a383542d .cell execution_count=1}\n``` {.python .cell-code}\nimport requests\nimport pandas as pd\n\n# Sessão\ns = requests.Session()\n\n# Token\ntoken = \"ca4c4373b9f20475d4f0f892ee20390fdc348dc283a9ccc\"\n\n# Login\nurl_login = f\"https://api.olhovivo.sptrans.com.br/v2.1/Login/Autenticar?token={token}\"\nlogin = s.post(url_login).json()\nprint(\"Login realizado:\", login)\n\n# Código da linha\ncodigo_linha = 741\n\n# Posição dos ônibus\nurl_onibus = f\"https://api.olhovivo.sptrans.com.br/v2.1/Posicao?codigoLinha={codigo_linha}\"\ndados_onibus = s.get(url_onibus).json()\n\nprint(dados_onibus)  # para ver o que a API retorna\n\n# Verificando se existem veículos\nif \"vs\" not in dados_onibus or dados_onibus[\"vs\"] is None:\n    print(\"Nenhum ônibus em operação agora.\")\nelse:\n    veiculos = dados_onibus[\"vs\"]\n    df_bus = pd.DataFrame(veiculos)\n    display(df_bus.head())\n```\n\n::: {.cell-output .cell-output-stdout}\n```\nLogin realizado: False\n{'Message': 'Authorization has been denied for this request.'}\nNenhum ônibus em operação agora.\n```\n:::\n:::\n\n\n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

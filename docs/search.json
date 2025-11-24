@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "posts/Atividade2/index.html",
+    "href": "posts/Atividade2/index.html",
+    "title": "— 1. CONFIGURAÇÕES INICIAIS —",
+    "section": "",
+    "text": "import requests import folium import pandas as pd\n\n— 1. CONFIGURAÇÕES INICIAIS —\n\n\nSeu Novo Token\nTOKEN = “073adc6302f541c8826992a5659c60b78c8207e350e966956c8efd660500c512”\n\n\nNova Linha: 175T-10 (Metrô Santana - Metrô Jabaquara)\n\n\nUma das linhas mais longas e importantes (Norte-Sul)\nLINHA_ALVO = “175T-10”\n\n\nSessão para manter a autenticação ativa (Cookie)\nsession = requests.Session()\ndef gerar_mapa_onibus(): # — 2. AUTENTICAÇÃO — url_auth = f”http://api.olhovivo.sptrans.com.br/v2.1/Login/Autenticar?token={TOKEN}” resp = session.post(url_auth)\nif resp.text != \"true\":\n    print(\"Erro: Falha na autenticação. Token pode estar incorreto.\")\n    return None\n\n# --- 3. DESCOBRIR O CÓDIGO INTERNO DA LINHA ---\n# A API não entende \"175T-10\", ela precisa de um código numérico (CL)\nurl_busca = f\"http://api.olhovivo.sptrans.com.br/v2.1/Linha/Buscar?termosBusca={LINHA_ALVO}\"\nlinhas = session.get(url_busca).json()\n\nif not linhas:\n    print(f\"Linha {LINHA_ALVO} não encontrada.\")\n    return None\n    \n# Pega a primeira opção (Sentido Principal: Santana -&gt; Jabaquara ou vice-versa)\ndados_linha = linhas[0]\ncodigo_linha = dados_linha['cl']\nnome_linha = f\"{dados_linha['lt']}-{dados_linha['tl']} ({dados_linha['tp']}-{dados_linha['ts']})\"\n\nprint(f\"Monitorando: {nome_linha}\")\n\n# --- 4. BUSCAR DADOS (Ônibus e Paradas) ---\n# A) Posição dos Ônibus agora\nurl_posicao = f\"http://api.olhovivo.sptrans.com.br/v2.1/Posicao/Linha?codigoLinha={codigo_linha}\"\ndados_posicao = session.get(url_posicao).json()\nlista_onibus = dados_posicao['vs'] if 'vs' in dados_posicao else []\n\n# B) Lista de Paradas (Pontos)\nurl_paradas = f\"http://api.olhovivo.sptrans.com.br/v2.1/Parada/BuscarParadasPorLinha?codigoLinha={codigo_linha}\"\nlista_paradas = session.get(url_paradas).json()\n\n# --- 5. CONSTRUÇÃO DO MAPA ---\n# Centraliza o mapa no primeiro ônibus encontrado. Se não tiver ônibus, usa a primeira parada.\nif lista_onibus:\n    centro_mapa = [lista_onibus[0]['py'], lista_onibus[0]['px']]\nelif lista_paradas:\n    centro_mapa = [lista_paradas[0]['py'], lista_paradas[0]['px']]\nelse:\n    print(\"Sem dados de GPS disponíveis no momento.\")\n    return None\n\n# Cria o mapa base\nmapa = folium.Map(location=centro_mapa, zoom_start=12)\n\n# Adiciona os Pinos das PARADAS (Azuis)\n# Isso desenha o \"caminho\" que a linha faz\nfor parada in lista_paradas:\n    folium.Marker(\n        [parada['py'], parada['px']],\n        popup=f\"🚏 {parada['np']}\",\n        icon=folium.Icon(color='blue', icon='info-sign')\n    ).add_to(mapa)\n\n# Adiciona os Pinos dos ÔNIBUS (Vermelhos)\nfor bus in lista_onibus:\n    folium.Marker(\n        [bus['py'], bus['px']],\n        tooltip=f\"🚌 Prefixo: {bus['p']}\",\n        icon=folium.Icon(color='red', icon='bus', prefix='fa')\n    ).add_to(mapa)\n    \nprint(f\"Sucesso! {len(lista_onibus)} ônibus e {len(lista_paradas)} paradas plotados.\")\nreturn mapa\n\n\n— 6. EXIBIÇÃO —\n\n\nChama a função e exibe o mapa logo abaixo\nmapa_final = gerar_mapa_onibus() mapa_final"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "myblog",
+    "section": "",
+    "text": "— 1. CONFIGURAÇÕES INICIAIS —\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCotação em Dolar\n\n\n\npython\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nNov 23, 2025\n\n\nAlexandre\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this blog"
+  },
+  {
+    "objectID": "posts/Atividade1/index.html",
+    "href": "posts/Atividade1/index.html",
+    "title": "Cotação em Dolar",
+    "section": "",
+    "text": "Neste post irei mostrar o gráfico que irá mostrar a cotação do dolar. O Gráfico irá mostrar no Mês 5 do Ano de 2022.\n\nimport requests\nimport pandas as pd\nimport plotly.express as px\nimport calendar\nfrom datetime import datetime, timedelta\n\n# Função pedida na atividade\ndef cotacao_mes_ano(mmYYYY):\n    # 1 — Converter a string\n    first_date = datetime.strptime(mmYYYY, \"%m%Y\")\n    last_day = calendar.monthrange(first_date.year, first_date.month)[1]\n    last_date = first_date.replace(day=last_day)\n\n    # 2 — Criar strings no formato exigido pela API\n    data_inicial = first_date.strftime(\"%m-%d-%Y\")\n    data_final   = last_date.strftime(\"%m-%d-%Y\")\n\n    # 3 — Montar URL da API PTAX\n    url = (\n        \"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/\"\n        f\"CotacaoDolarPeriodo(dataInicial='{data_inicial}',dataFinalCotacao='{data_final}')\"\n        \"?$format=json\"\n    )\n\n    # 4 — Requisição\n    r = requests.get(url).json()\n    df = pd.DataFrame(r[\"value\"])\n\n    # 5 — Converter datas\n    df[\"dataHoraCotacao\"] = pd.to_datetime(df[\"dataHoraCotacao\"])\n\n    # 6 — Ordenar\n    df = df.sort_values(\"dataHoraCotacao\")\n\n    return df\n\n# ------------------------------------\n# CHAMAR A FUNÇÃO PARA MAIO DE 2022\n# ------------------------------------\n\ndf = cotacao_mes_ano(\"052022\")\n\nfig = px.line(\n    df,\n    x=\"dataHoraCotacao\",\n    y=\"cotacaoVenda\",\n    title=\"Cotação do Dólar – Maio/2022\",\n)\n\nfig.show()"
+  }
+]

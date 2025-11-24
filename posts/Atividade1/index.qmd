@@ -1,0 +1,67 @@
+---
+title: "Cotação em Dolar"
+author: "Alexandre"
+date: "2025-11-23"
+categories: [python, code, analysis]
+image: "Presidential_dollar_coin_reverse.png"
+jupyter: python3
+---
+
+Neste post irei mostrar o gráfico que irá mostrar a cotação do dolar. O Gráfico irá mostrar no Mês 5 do Ano de 2022.
+
+```{python}
+import requests
+import pandas as pd
+import plotly.express as px
+import calendar
+from datetime import datetime, timedelta
+
+# Função pedida na atividade
+def cotacao_mes_ano(mmYYYY):
+    # 1 — Converter a string
+    first_date = datetime.strptime(mmYYYY, "%m%Y")
+    last_day = calendar.monthrange(first_date.year, first_date.month)[1]
+    last_date = first_date.replace(day=last_day)
+
+    # 2 — Criar strings no formato exigido pela API
+    data_inicial = first_date.strftime("%m-%d-%Y")
+    data_final   = last_date.strftime("%m-%d-%Y")
+
+    # 3 — Montar URL da API PTAX
+    url = (
+        "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/"
+        f"CotacaoDolarPeriodo(dataInicial='{data_inicial}',dataFinalCotacao='{data_final}')"
+        "?$format=json"
+    )
+
+    # 4 — Requisição
+    r = requests.get(url).json()
+    df = pd.DataFrame(r["value"])
+
+    # 5 — Converter datas
+    df["dataHoraCotacao"] = pd.to_datetime(df["dataHoraCotacao"])
+
+    # 6 — Ordenar
+    df = df.sort_values("dataHoraCotacao")
+
+    return df
+
+# ------------------------------------
+# CHAMAR A FUNÇÃO PARA MAIO DE 2022
+# ------------------------------------
+
+df = cotacao_mes_ano("052022")
+
+fig = px.line(
+    df,
+    x="dataHoraCotacao",
+    y="cotacaoVenda",
+    title="Cotação do Dólar – Maio/2022",
+)
+
+fig.show()
+
+```
+
+
+
